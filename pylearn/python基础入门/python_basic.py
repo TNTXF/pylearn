@@ -1,4 +1,4 @@
-#class from P36 to P45, current is ===> P42
+#class from P36 to P53, current is ===> P45
 
 #位运算取反的结果是 -(x + 1), such as:  print(~12) ==> -13
 #print(~12)  # -13
@@ -49,7 +49,7 @@ for i in range(0,1000,7):
 '''
 ########################################################################
 #给定一个不超过5位的正整数，判断其有几位，依次打印每位的数字
-#vs code 乱码解决：新建一个环境变量，key=PYTHONIOENCODING  value=UTF-8
+#vs code乱码解决：新建一个环境变量，key=PYTHONIOENCODING  value=UTF-8
 '''
 def print_digits(number: int):
     if 1 <= number <= 99999:
@@ -64,5 +64,74 @@ def print_digits(number: int):
 
 print_digits(12385)
 '''
+
+########################################################################
+#打印一个正方形
+"""
+def print_square(size):
+    if size <= 0:
+        print("请输入一个正整数作为边长")
+        return
+    for i in range(size):
+        print('*' * size)
+
+print_square(2)
+"""
+
+########################################################################
+#求100以内所有奇数的和,下面代码可以改进
+"""
+def sum_of_odd_numbers(n: int):
+    sum = 0
+    for i in range(1,n+1):
+        if i%2 != 0:
+            sum += i
+    return sum
+
+print(sum_of_odd_numbers(100))
+"""
+########################################################################
+#给定一个数，求它的阶乘的和
+"""
+def factorial(n: int):
+    if n < 0:
+        return r"Error: 请输入正数"
+    if n == 0:
+        return 1
+    else:
+        return n * factorial(n-1)
+    
+print(factorial(-5))
+"""
+
+########################################################################
+#给定一个数，求它的阶乘的和，如5，结果为153（1+2+6+24+120）
+"""
+def factorial_sum(n):
+    factorial = 1  
+    total_sum = 0 
+
+    for i in range(1, n + 1):
+        factorial *= i 
+        total_sum += factorial 
+
+    return total_sum
+
+result = factorial_sum(5)
+print(result)  
+"""
+########################################################################
+#给定一个数，判断它是否为质数
+"""
+def is_prime(n: int):
+    if n <= 1:
+        return False
+    for i in range(2, int(n**0.5) + 1):
+        if n % i == 0:
+            return False    
+    return True
+print(is_prime(100000)) 
+"""
+########################################################################
 
 

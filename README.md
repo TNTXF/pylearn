@@ -1,1 +1,1 @@
-# a learn process of python
+# a learn process of python for myself #
