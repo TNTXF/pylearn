@@ -1,4 +1,4 @@
-#current is ===> P59
+
 
 #位运算取反的结果是 -(x + 1), such as:  print(~12) ==> -13
 #print(~12)  # -13
@@ -49,7 +49,7 @@ for i in range(0,1000,7):
 '''
 ########################################################################
 #给定一个不超过5位的正整数,判断其有几位,依次打印每位的数字
-#vs code乱码解决：新建一个环境变量,key=PYTHONIOENCODING  value=UTF-8
+#vs code乱码解决:新建一个环境变量,key=PYTHONIOENCODING  value=UTF-8
 '''
 def print_digits(number: int):
     if 1 <= number <= 99999:
@@ -58,7 +58,7 @@ def print_digits(number: int):
         print(f"这个数有 {digit_count} 位")
         
         for i, digit in enumerate(number_str, 1):
-            print(f"第 {i} 位：{digit}")
+            print(f"第 {i} 位:{digit}")
     else:
         print("please enter a number that is between 1 and 99999")
 
@@ -348,9 +348,9 @@ print(p.x)  # 输出 3
 print(p.y)  # 输出 4
 
 #命名元组的特点:
-#不可变性：命名元组是不可变的,就像普通元组一样,一旦创建就不能修改字段的值。
-#字段名访问：可以通过字段名(例如 p.x)访问数据,而不必使用索引(如 p[0])。
-#可读性强：命名元组的代码可读性比普通元组更好,因为字段有明确的名字
+#不可变性:命名元组是不可变的,就像普通元组一样,一旦创建就不能修改字段的值。
+#字段名访问:可以通过字段名(例如 p.x)访问数据,而不必使用索引(如 p[0])。
+#可读性强:命名元组的代码可读性比普通元组更好,因为字段有明确的名字
 # 使用 _replace() 替换字段值
 p2 = p._replace(x=10)
 print(p2)  # 输出 Point(x=10, y=4)
@@ -363,11 +363,10 @@ x, y = p
 print(x, y)  # 输出 3 4
 """
 ################################################################
-#字符串：一个个字符组成的有序序列，不可变对象
-
+#字符串:一个个字符组成的有序序列,不可变对象
+"""
 s1 = 'hello'
 s2 = "hello"
-s3 = """this is a string"""
 s4 = 'hello\n world'
 s5 = r"hello\n world"
 s6 = 'C:\windows\nt'
@@ -394,9 +393,9 @@ print(result)  # 输出: "1,2,3,4"
 #字符串分割 split和partition
 
 #str.split(sep=None, maxsplit=-1)  
-#rsplit() 的功能类似于 split()，但从右侧开始分割。
-#sep：分隔符，默认为 None，表示按任意空白字符（空格、换行、制表符等）分割。
-#maxsplit：最大分割次数，默认为 -1，表示分割所有匹配项。
+#rsplit() 的功能类似于 split(),但从右侧开始分割。
+#sep:分隔符,默认为 None,表示按任意空白字符(空格、换行、制表符等)分割。
+#maxsplit:最大分割次数,默认为 -1,表示分割所有匹配项。
 text = "apple,orange,banana"
 result = text.split(',')
 print(result)
@@ -405,15 +404,15 @@ text = "Python is fun"
 result = text.split(maxsplit=1)
 print(result)  
 
-#splitlines() 根据行分隔符（\n、\r\n）分割字符串，适用于处理多行文本
-#str.splitlines(keepends=False)   #keepends：是否保留行分隔符，默认为 False
+#splitlines() 根据行分隔符(\n、\r\n)分割字符串,适用于处理多行文本
+#str.splitlines(keepends=False)   #keepends:是否保留行分隔符,默认为 False
 text = "Hello\nWorld\nPython"
 result = text.splitlines()
 print(result)  # 输出: ['Hello', 'World', 'Python']
 
 
-#partition() 将字符串分成三部分：指定分隔符之前的部分、分隔符本身、分隔符之后的部分。
-#rpartition() 从右侧开始分割，其他与 partition() 相同
+#partition() 将字符串分成三部分:指定分隔符之前的部分、分隔符本身、分隔符之后的部分。
+#rpartition() 从右侧开始分割,其他与 partition() 相同
 #str.partition(sep)
 #str.rpartition(sep)
 
@@ -421,12 +420,12 @@ text = "apple-banana-orange"
 result = text.partition("-")
 print(result)  # 输出: ('apple', '-', 'banana-orange')
 
-#re.split() 是正则表达式的分割方法，适合复杂的分割模式
+#re.split() 是正则表达式的分割方法,适合复杂的分割模式
 import re
 text = "apple1banana2orange3"
 result = re.split(r'\d', text)
-#前缀 r 表示这是一个 原始字符串（raw string）。
-#在 Python 中，原始字符串的作用是告诉解释器不要对字符串中的反斜杠（\）进行转义处理
+#前缀 r 表示这是一个 原始字符串(raw string)。
+#在 Python 中,原始字符串的作用是告诉解释器不要对字符串中的反斜杠(\)进行转义处理
 print(result)  # 输出: ['apple', 'banana', 'orange', '']
 
 #字符串其他操作函数
@@ -441,6 +440,149 @@ print('I am a student'.ljust(20))
 print('I am a student'.rjust(20))
 print('I am a student'.replace('student', 'teacher'))  # 返回新的字符串
 # str.count(sub[, start[, end]]) ,同理还有 lstrip(), rstrip()
-print('\n \r\n I am a student  \r \n'.strip())    #常用，去掉两端的空格、换行符
-print('I am a student'.find('am'))  #str.find(sub[, start[, end]])，未找到返回-1
+print('\n \r\n I am a student  \r \n'.strip())    #常用,去掉两端的空格、换行符
+print('I am a student'.find('am'))  #str.find(sub[, start[, end]]),未找到返回-1
 print('I am a student'.index('am')) #未找到抛异常
+print('I am a student'.count('a'))
+print('I am a student'.startswith('I am'))
+print('I am a student'.endswith('student'))
+#字符串is系列判断
+a = 'abc123Ads'
+a.isalnum()
+a.isalpha()
+a.isdecimal()
+a.isdigit()
+a.isidentifier()
+a.islower()
+a.isupper()
+a.isspace()
+"""
+##################
+"""
+# 字符串格式化方式一: % 操作符
+#%s:字符串
+#%d:整数
+#%f:浮点数(默认精度为小数点后 6 位)
+name = "Alice"
+age = 25
+height = 1.75
+print("Name: %s, Age: %d, Height: %.2f" % (name, age, height))
+
+# 字符串格式化方式二: str.format()
+#"template string with {placeholders}".format(value1, value2, ...)
+name = "Alice"
+age = 25
+height = 1.75
+
+# 使用 { } 占位符
+print("Name: {}, Age: {}, Height: {:.2f}".format(name, age, height)) 
+print("Name: {n}, Age: {a}, Height: {h:.2f}".format(n=name, a=age, h=height)) #命名参数
+print("Name: {0}, Age: {1}, Height: {2:.2f}".format(name, age, height))   #使用索引
+
+
+# 字符串格式化方式三: f-string
+name = "Alice"
+age = 25
+height = 1.75
+
+print(f"Name: {name}, Age: {age}, Height: {height:.2f}")
+#{} 里面的表达式可以是任何 Python 表达式
+score = 88
+print(f"Next year {name} will be {age + 1} years old and will aim for a score above {score + 5}.")
+
+
+# 字符串格式化方式四:Template
+from string import Template
+
+template = Template("Hello, $name! You are $age years old.")
+result = template.substitute(name="Alice", age=25)
+print(result)
+
+# %  ==> 旧式格式化字符串  ==>  简单的格式化,不推荐在新代码中使用
+# str.format() ==> Python 3 推荐方法  ==>  复杂的格式化场景
+# f-string ==> 格式化字符串字面量,简洁高效  ==>  Python 3.6+,适合嵌入表达式和变量
+# Template ==> 安全的替换变量,不支持复杂表达式  ==> 需要安全替换、不需要复杂表达式的场景
+"""
+################################################################
+#bytes and bytearray: 字节序列和可变字节序列
+"""
+#bytes 是不可变的字节序列,类似于字符串。它一旦创建,就无法更改其内容
+# 使用 b'' 前缀
+b = b"hello"
+print(b)  # 输出: b'hello'
+
+# 使用 bytes() 函数
+b = bytes([104, 101, 108, 108, 111])
+print(b)  # 输出: b'hello'
+
+# 使用字符串的 encode 方法(将字符串编码为 bytes)
+s = "hello"
+b = s.encode('utf-8')
+print(b)  # 输出: b'hello'
+#不可变:无法修改 bytes 对象中的任何字节。
+#支持切片和迭代:与字符串类似,可以通过索引和切片访问其中的字节
+#常用于需要不可变字节数据的场景,例如网络通信、加密数据、文件 I/O 等
+
+#------------
+#bytearray 是可变的字节序列,类似于可变字符串。可以修改其中的内容,支持追加、修改、删除等操作
+# 使用 bytearray() 函数
+b_arr = bytearray([104, 101, 108, 108, 111])
+print(b_arr)  # 输出: bytearray(b'hello')
+
+# 将 bytes 转换为 bytearray
+b = b"hello"
+b_arr = bytearray(b)
+print(b_arr)  # 输出: bytearray(b'hello')
+
+#修改
+b_arr = bytearray(b"hello")
+b_arr[0] = 72  # 修改第一个字节(H 的 ASCII 值为 72)
+print(b_arr)  # 输出: bytearray(b'Hello')
+
+b_arr.append(33)  # 添加 '!' 的 ASCII 值
+print(b_arr)  # 输出: bytearray(b'Hello!')
+"""
+################################################################
+#python解构，Python 提供了多种解构方式，包括对列表、元组、字典的解构赋值
+"""
+# 简单的元组解构
+person = ("Alice", 30)
+name, age = person
+print(name)  # 输出: Alice
+print(age)   # 输出: 30
+
+# 列表解构
+coordinates = [10, 20, 30]
+x, y, z = coordinates
+print(x, y, z)  # 输出: 10 20 30
+
+#使用*
+numbers = [1, 2, 3, 4, 5]
+first, *middle, last = numbers
+print(first)    # 输出: 1
+print(middle)   # 输出: [2, 3, 4]
+print(last)     # 输出: 5
+
+# 字典解构
+# 遍历并解构字典的键值对
+person = {"name": "Alice", "age": 30}
+for key, value in person.items():
+    print(f"{key}: {value}")
+
+# 字典解构传参
+def greet(name, age):
+    print(f"Hello {name}, you are {age} years old.")
+
+person = {"name": "Alice", "age": 30}
+greet(**person)  # 使用 ** 将字典解构为函数的参数
+
+a,b = 1,2 # 左边是(1,2)元组,右边是解构, a=1, b=2
+"""
+################################################################
+#python丢弃变量
+# 单个变量不需要                name, _ = ("Alice", "unused_value")
+#多个变量不需要                 first, _, _, last = data
+#忽略循环变量                   for _ in range(5):
+#忽略函数返回值中的部分值        x, _, z = get_coordinates()
+#丢弃不需要的多个中间值          first, *_, last = data
+
