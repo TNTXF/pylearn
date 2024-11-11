@@ -1,1 +1,1 @@
-some notes and demo of python learning
+#Some Notes and Demos of Learning python
