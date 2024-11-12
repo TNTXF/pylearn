@@ -282,6 +282,7 @@ logging.basicConfig(
 logging.warning("This is a warning message")  # 会记录在 app.log 文件中
 logging.error("This is an error message")     # 也会记录在文件中
 
+########################################
 #通过 Logger、Handler 和 Formatter 自定义日志
 import logging
 
@@ -333,18 +334,128 @@ for i in range(10):
 """
 
 ################################################################
+################################################################
+#Python 提供了 multiprocessing 模块，便于创建和管理多个进程
+"""
+#基本的多进程创建：Process 类
+#Process 类是 multiprocessing 模块的核心类，用于创建和启动新进程
+from multiprocessing import Process
 
-
-import threading
-import time
-a = threading.local()
 def worker():
-    a.x = 0
-    for i in range(100):
-        #time.sleep(0.01)
-        a.x += 1
-    print(threading.current_thread(),a.x)
-    
-for i in range(10):
-    t = threading.Thread(target=worker)
-    t.start()
+    print("Worker process is running")
+
+if __name__ == "__main__":
+    p = Process(target=worker)  # 创建进程对象
+    p.start()  # 启动进程
+    p.join()   # 等待进程完成
+#定义了一个 worker 函数，并使用 Process 创建一个进程对象 p
+#start() 方法启动进程，join() 方法让主进程等待子进程完成
+
+#####进程间通信####
+#Python 提供了多种进程间通信的方式，如队列（Queue）、管道（Pipe）和共享内存对象
+#队列（Queue）：用于在进程之间安全地传递数据，类似于线程的 queue.Queue
+from multiprocessing import Process, Queue
+
+def producer(q):
+    q.put("Hello from producer")
+
+def consumer(q):
+    print(q.get())
+
+if __name__ == "__main__":
+    q = Queue()
+    p1 = Process(target=producer, args=(q,))
+    p2 = Process(target=consumer, args=(q,))
+    p1.start()
+    p2.start()
+    p1.join()
+    p2.join()
+
+
+#管道（Pipe）：实现双向数据传输，适合双进程通信
+from multiprocessing import Process, Pipe
+
+def worker(conn):
+    conn.send("Hello from worker")
+    conn.close()
+
+if __name__ == "__main__":
+    parent_conn, child_conn = Pipe()
+    p = Process(target=worker, args=(child_conn,))
+    p.start()
+    print(parent_conn.recv())  # 接收子进程发送的消息
+    p.join()
+
+
+#共享内存（Value 和 Array）：在多个进程间共享数据
+from multiprocessing import Process, Value, Array
+
+def increment(shared_val):
+    shared_val.value += 1
+
+if __name__ == "__main__":
+    val = Value("i", 0)  # 创建整数共享变量
+    p = Process(target=increment, args=(val,))
+    p.start()
+    p.join()
+    print(val.value)  # 输出 1
+
+#进程池（Pool）
+#Pool 提供了批量创建进程的方法，可以限制最大并发进程数量，适合并行执行大量任务
+from multiprocessing import Pool
+
+def worker(x):
+    return x * x
+
+if __name__ == "__main__":
+    with Pool(4) as pool:  # 创建 4 个并发进程
+        results = pool.map(worker, [1, 2, 3, 4])  # 并行执行任务
+        print(results)  # 输出 [1, 4, 9, 16]
+
+#Pool 中常用的方法包括：
+    #map()：类似于内置的 map() 函数，接受可迭代对象并将任务分配给各个进程。
+    #apply()：单次任务分配给一个进程，返回结果。
+    #apply_async()：异步任务分配，适合需要在执行过程中处理结果的场景
+
+#### 异常处理和退出####
+#在多进程中，子进程遇到的异常不会传递到主进程，因此需要单独捕获并处理
+"""
+
+####为什么多进程创建和启动要放在if __name__ == "__main__":里
+#1. 避免递归进程创建
+""" 当 Python 脚本运行时，每个新创建的子进程都会重新加载该脚本。
+没有 if __name__ == "__main__": 的保护，子进程会重复执行整个脚本的代码，而不是仅执行目标函数。
+这会导致每个子进程不断创建新的子进程，最终陷入无限递归，耗尽系统资源 """
+
+#2. 平台兼容性
+""" 在 Unix 系统（如 Linux）上，fork() 系统调用用于创建进程，子进程会自动继承父进程的代码和内存空间
+因此通常不会遇到无限递归问题。
+然而，在 Windows 和 macOS 上，Python 使用了 spawn 方法来创建进程，它会重新导入主模块，
+因此没有 if __name__ == "__main__": 的保护会导致重复导入并运行脚本中的内容 """
+
+#在Linux上测试
+""" 
+////////////////////////////////
+root@HK-BGP:~  $ python test.py 
+1
+root@HK-BGP:~  $ cat test.py 
+from multiprocessing import Process, Value, Array
+
+def increment(shared_val):
+    shared_val.value += 1
+
+val = Value("i", 0)  # 创建整数共享变量
+p = Process(target=increment, args=(val,))
+p.start()
+p.join()
+print(val.value)  # 输出 1 
+//////////////////////////////
+"""
+
+#__name__ 变量的作用
+""" Python 运行脚本时，__name__ 变量的值会根据脚本是直接运行还是被导入而有所不同：
+
+    如果脚本是直接运行的，__name__ 的值为 "__main__"。
+    如果脚本被作为模块导入，__name__ 的值为模块名。
+通过 if __name__ == "__main__": 结构，只有在脚本被直接运行时才会执行进程创建的代码，
+而在模块导入或子进程重新加载时不会执行 """
