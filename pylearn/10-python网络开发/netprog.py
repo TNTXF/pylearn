@@ -8,89 +8,118 @@
     #客户端和服务器：客户端发起请求，服务器监听并响应客户端请求
 
 ####socket 模块####
+#常用方法
+""" 
+socket()：创建套接字对象。
+bind()：绑定地址(IP地址和端口)。
+listen()：监听连接（仅在服务器端使用）。
+accept()：接收连接请求，返回一个新的套接字和客户端地址。#默认阻塞
+connect()：连接到远程主机（客户端使用）。
+send() / sendall()：发送数据。
+recv()：接收数据。
+close()：关闭连接
+"""
+
+
 
 #---------------TCP Server 示例代码---------------#
 """ 
 import socket
+import logging
+logging.basicConfig(level=logging.INFO,format='%(thread)s %(threadName)s %(message)s')
 
-# 创建一个 TCP 套接字
+# 创建 TCP/IP 套接字
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-# 绑定地址和端口
-server_socket.bind(('localhost', 12345))
+# 绑定到端口
+server_socket.bind(('localhost', 65432))
+server_socket.listen()
 
-# 开始监听客户端请求
-server_socket.listen(5)
-print("Server listening on port 12345")
+logging.info("waitting for connect...")
 
-# 等待客户端连接
-client_socket, client_address = server_socket.accept()
-print(f"Connection established with {client_address}")
+while True:
+    # 等待连接
+    client_socket, addr = server_socket.accept()
+    logging.info(f"connect from --> {addr}")
+    logging.info(f"client socket: {client_socket}")
 
-# 接收数据
-data = client_socket.recv(1024)
-print(f"Received data: {data.decode()}")
+    # 接收数据
+    data = client_socket.recv(1024)
+    if data:
+        logging.info(f"data messages: {data.decode()}")
+        client_socket.sendall(b"data received")
 
-# 发送响应
-client_socket.send("Hello, Client!".encode())
-
-# 关闭连接
-client_socket.close()
-server_socket.close() 
-"""
+    # 关闭连接
+    client_socket.close() """
 
 
 #-------------------------TCP Client 示例代码----------------------#
 """ 
 import socket
+import logging
 
-# 创建一个 TCP 套接字
+logging.basicConfig(level=logging.INFO,format='%(thread)s %(threadName)s %(message)s')
+
+# 创建 TCP/IP 套接字
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # 连接服务器
-client_socket.connect(('localhost', 12345))
+client_socket.connect(('localhost', 65432))
 
 # 发送数据
-client_socket.send("Hello, Server!".encode())
+client_socket.sendall(b"hello server")
 
-# 接收服务器响应
+# 接收响应
 data = client_socket.recv(1024)
-print(f"Received from server: {data.decode()}")
+logging.info(f"接收自服务器: {data.decode()}") 
 
 # 关闭连接
-client_socket.close() 
-"""
+client_socket.close()"""
 
 #-----------------------UDP Server示例-----------------------#
+#UDP 协议不需要连接，数据通过 sendto() 和 recvfrom() 发送和接收
 """ 
 import socket
+import logging
+logging.basicConfig(level=logging.INFO,format='%(thread)s %(threadName)s %(message)s')
 
-server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-server_socket.bind(('localhost', 12345))
+# 创建 UDP/IP 套接字
+udp_server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+# 绑定到端口
+udp_server_socket.bind(('localhost', 65432))
+
+logging.info("UDP Server is waitting for data...")
 
 while True:
-    data, addr = server_socket.recvfrom(1024)
-    print(f"Received data: {data.decode()} from {addr}")
-    server_socket.sendto("Hello, UDP Client!".encode(), addr) 
-"""
+    data, addr = udp_server_socket.recvfrom(1024)
+    print(f"received data from --> {addr} : {data.decode()}")
+    udp_server_socket.sendto(b"data received", addr)
+ """
 #-----------------------UDP Client示例-----------------------#
 """ 
 import socket
-client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+import logging
+logging.basicConfig(level=logging.INFO,format='%(thread)s %(threadName)s %(message)s')
+
+# 创建 UDP/IP 套接字
+udp_client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 # 发送数据
-client_socket.sendto("Hello, Server!".encode(), ('localhost', 12345))
+udp_client_socket.sendto(b"Hello,UDP Server", ('localhost', 4023))
 
-# 接收数据
-data, server = client_socket.recvfrom(1024)
-print(f"Received from server: {data.decode()}")
+# 接收响应
+data, server = udp_client_socket.recvfrom(1024)
+logging.info(data.decode())
 
-client_socket.close() 
-"""
+# 关闭套接字
+udp_client_socket.close() """
+
 
 ####3. 高级功能#####
 #asyncio（异步网络编程）
 #Python 的 asyncio 库允许进行异步 I/O 操作，特别适用于高并发的网络应用（如 HTTP 服务器、WebSocket 等）
+""" 
 import asyncio
 
 async def handle_client(reader, writer):
@@ -111,10 +140,11 @@ async def main():
     async with server:
         await server.serve_forever()
 
-asyncio.run(main())
+asyncio.run(main()) """
 
 
 #requests 是 Python 中非常流行的第三方库，简化了 HTTP 请求的发送和响应的处理。它使得网络请求更加简单和人性化
+""" 
 import requests
 
 # 发送 GET 请求
@@ -124,5 +154,221 @@ print(response.text)
 # 发送 POST 请求
 data = {'name': 'Alice', 'age': 25}
 response = requests.post('https://httpbin.org/post', data=data)
-print(response.text)
+print(response.text) """
 
+########################################################################
+########################################################################
+#写一个群聊程序
+
+# 服务器端
+""" 
+import socket
+import threading
+
+# 存储所有连接的客户端套接字
+clients = []
+
+# 广播消息给所有客户端
+def broadcast(message, client_socket):
+    for client in clients:
+        # 不给自己发送消息
+        if client != client_socket:
+            try:
+                client.send(message)
+            except:
+                # 如果发送失败，删除该客户端
+                clients.remove(client)
+
+# 处理每个客户端的消息
+def handle_client(client_socket):
+    while True:
+        try:
+            message = client_socket.recv(1024)  # 接收消息
+            if message:
+                print(f"接收到消息: {message.decode()}")
+                broadcast(message, client_socket)  # 广播消息
+            else:
+                break
+        except:
+            break
+
+    # 客户端断开连接，移除该客户端
+    clients.remove(client_socket)
+    client_socket.close()
+
+# 服务器主函数
+def start_server():
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.bind(('0.0.0.0', 65432))
+    server_socket.listen(5)
+    print("服务器启动，等待客户端连接...")
+
+    while True:
+        client_socket, addr = server_socket.accept()
+        print(f"客户端 {addr} 已连接")
+        clients.append(client_socket)
+        
+        # 启动一个新线程处理客户端
+        client_thread = threading.Thread(target=handle_client, args=(client_socket,))
+        client_thread.start()
+
+if __name__ == "__main__":
+    start_server() 
+ """
+
+#客户端代码
+""" 
+import socket
+import threading
+
+# 接收消息的函数
+def receive_messages(client_socket):
+    while True:
+        try:
+            message = client_socket.recv(1024)
+            if message:
+                print(f"\n{message.decode()}")
+            else:
+                break
+        except:
+            break
+
+# 发送消息的函数
+def send_messages(client_socket):
+    while True:
+        message = input()  # 用户输入消息
+        if message:
+            client_socket.send(message.encode())
+
+# 客户端主函数
+def start_client():
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client_socket.connect(('38.57.12.49', 65432))
+
+    print("已连接到服务器，开始聊天...")
+
+    # 启动线程接收消息
+    receive_thread = threading.Thread(target=receive_messages, args=(client_socket,))
+    receive_thread.start()
+
+    # 启动线程发送消息
+    send_thread = threading.Thread(target=send_messages, args=(client_socket,))
+    send_thread.start()
+
+if __name__ == "__main__":
+    start_client() """
+
+
+################################################################
+################################################################
+#Python的socketserver模块是一个高级的网络服务框架，用于处理网络请求。它基于socket模块
+#socketserver模块包含以下几个主要组件
+
+####主要组件####
+
+    #BaseServer：所有服务器类型的基类。它定义了基本的服务器行为，如接收连接请求、绑定端口等。
+    #TCPServer：继承自BaseServer，用于处理基于TCP协议的网络请求。
+    #UDPServer：继承自BaseServer，用于处理基于UDP协议的网络请求。
+    #StreamRequestHandler：用于处理基于流的请求（例如TCP连接）。每个请求都会创建一个StreamRequestHandler对象来处理。
+    #DatagramRequestHandler：用于处理基于数据报的请求（例如UDP连接）。每个请求都会创建一个DatagramRequestHandler对象来处理。
+
+####socketserver 模块的使用####
+
+#创建一个简单的 TCP 服务器
+""" 
+import socketserver
+
+class MyHandler(socketserver.BaseRequestHandler):
+    def handle(self):
+        # 处理客户端请求
+        data = self.request.recv(1024).strip()  # 接收数据
+        print(f"Received data: {data}")
+        self.request.sendall(data)  # 回送数据
+
+if __name__ == "__main__":
+    # 创建一个TCP服务器，监听localhost:9999
+    server = socketserver.TCPServer(('localhost', 9999), MyHandler)
+    print("Server running...")
+    server.serve_forever() """
+
+
+# 使用socketserver创建一个UDP服务器
+""" 
+import socketserver
+
+class MyUDPHandler(socketserver.DatagramRequestHandler):
+    def handle(self):
+        data = self.request[0].strip()  # 获取接收到的数据
+        socket = self.request[1]  # 获取客户端的socket
+        print(f"Received UDP data: {data}")
+        socket.sendto(data, self.client_address)  # 回送数据
+
+if __name__ == "__main__":
+    # 创建一个UDP服务器，监听localhost:9999
+    server = socketserver.UDPServer(('localhost', 9999), MyUDPHandler)
+    print("Server running...")
+    server.serve_forever() """
+
+####多线程支持####
+#socketserver模块默认是单线程的，也就是说每个请求会按顺序依次处理。
+#要支持并发处理请求，可以使用ThreadingMixIn类来创建多线程服务器
+
+""" 
+import socketserver
+
+class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
+    pass
+
+class MyHandler(socketserver.BaseRequestHandler):
+    def handle(self):
+        data = self.request.recv(1024).strip()
+        print(f"Received data: {data}")
+        self.request.sendall(data)
+
+if __name__ == "__main__":
+    server = ThreadedTCPServer(('localhost', 9999), MyHandler)
+    print("Server running...")
+    server.serve_forever() """
+
+
+####高级功能####
+#请求超时：可以设置服务器的超时机制。如果请求在指定时间内没有处理完，可以让服务器自动中止该请求。
+#多种请求处理方式：socketserver支持多种不同的请求处理方式，比如同步、线程池、进程池等。
+
+#信号处理：服务器运行过程中可能需要处理终止信号，例如Ctrl+C。
+#可以通过捕捉KeyboardInterrupt异常或使用signal模块来优雅地关闭服务器
+
+
+
+################################################################
+################################################################
+#Python的异步编程通过asyncio模块和async/await关键字来实现，旨在解决传统同步编程在处理I/O密集型任务时的效率问题
+#通过异步编程，Python能够在等待I/O操作（如网络请求、文件读写等）时执行其他任务，从而提升程序的效率
+
+####异步编程的基本概念####
+#异步编程的核心是事件循环（Event Loop）和协程（Coroutines）
+#事件循环负责调度多个协程的执行，协程是可以暂停和恢复的函数
+#通过async和await，你可以定义和管理异步任务的执行流程
+
+#协程（Coroutine）：协程是Python中的一种特殊函数，用async def定义。
+# 协程可以在执行过程中被暂停，等待I/O操作的结果，然后继续执行。
+
+#事件循环（Event Loop）：事件循环管理着所有协程的执行，它会调度协程并确保它们在非阻塞的方式下运行。
+#async 和 await：async用于定义协程，await用于暂停协程的执行并等待其他协程或异步操作完成。
+
+####基本语法与使用####
+#定义和运行协程
+import asyncio
+
+# 定义一个协程
+async def greet():
+    print("Hello")
+    await asyncio.sleep(1)  # 模拟异步操作
+    print("World")
+
+# 运行事件循环
+asyncio.run(greet())
+
+#async def greet()：定义一个协程函数。
+#await asyncio.sleep(1)：暂停协程的执行，模拟一个耗时操作。
+#asyncio.run(greet())：通过asyncio.run启动事件循环并运行协程
