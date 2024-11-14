@@ -342,33 +342,161 @@ if __name__ == "__main__":
 
 ################################################################
 ################################################################
-#Python的异步编程通过asyncio模块和async/await关键字来实现，旨在解决传统同步编程在处理I/O密集型任务时的效率问题
-#通过异步编程，Python能够在等待I/O操作（如网络请求、文件读写等）时执行其他任务，从而提升程序的效率
+#Python中的IO多路复用是一种高效的I/O操作方式，通常用于处理多个I/O事件，如网络连接、文件读写等
+#Python中有几个模块可以实现IO多路复用的功能，主要包括select、poll、和epoll模块。
+#这些模块允许程序在一个线程内同时处理多个I/O操作，适合在高并发情况下提升性能
 
-####异步编程的基本概念####
-#异步编程的核心是事件循环（Event Loop）和协程（Coroutines）
-#事件循环负责调度多个协程的执行，协程是可以暂停和恢复的函数
-#通过async和await，你可以定义和管理异步任务的执行流程
+####select模块####
+#select模块提供了基础的IO多路复用功能，主要有select.select方法。
+#在Linux和Windows上都支持，但在高并发情况下性能较差，原因是它对监控的文件描述符有数量限制
 
-#协程（Coroutine）：协程是Python中的一种特殊函数，用async def定义。
-# 协程可以在执行过程中被暂停，等待I/O操作的结果，然后继续执行。
+#select.select接收三个列表：读、写、异常，并在指定超时时间内监控这些文件描述符的状态
+""" 
+import select
+import socket
 
-#事件循环（Event Loop）：事件循环管理着所有协程的执行，它会调度协程并确保它们在非阻塞的方式下运行。
-#async 和 await：async用于定义协程，await用于暂停协程的执行并等待其他协程或异步操作完成。
+# 创建一个非阻塞的socket
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server_socket.bind(('localhost', 8080))
+server_socket.listen(5)
+server_socket.setblocking(False)
 
-####基本语法与使用####
-#定义和运行协程
-import asyncio
+# 监控输入列表
+inputs = [server_socket]
+outputs = []
 
-# 定义一个协程
-async def greet():
-    print("Hello")
-    await asyncio.sleep(1)  # 模拟异步操作
-    print("World")
+while inputs:
+    # select方法返回三个列表
+    readable, writable, exceptional = select.select(inputs, outputs, inputs)
+    
+    for s in readable:
+        if s is server_socket:
+            # 处理新连接
+            conn, addr = s.accept()
+            print('Connected by', addr)
+            conn.setblocking(False)
+            inputs.append(conn)
+        else:
+            # 处理已有连接
+            data = s.recv(1024)
+            if data:
+                # 处理数据
+                outputs.append(s)
+            else:
+                inputs.remove(s)
+                s.close()
 
-# 运行事件循环
-asyncio.run(greet())
+    for s in writable:
+        # 向客户端写数据
+        s.send(b"Response")
+        outputs.remove(s)
 
-#async def greet()：定义一个协程函数。
-#await asyncio.sleep(1)：暂停协程的执行，模拟一个耗时操作。
-#asyncio.run(greet())：通过asyncio.run启动事件循环并运行协程
+    for s in exceptional:
+        # 处理异常情况
+        inputs.remove(s)
+        s.close() """
+
+
+####poll模块####
+#poll是select的改进版，克服了文件描述符限制的问题。在Linux上有更好的性能，但在Windows上不支持
+
+#poll方法提供的接口与select不同。你需要注册文件描述符并设置它们的事件掩码
+""" 
+import select
+import socket
+
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server_socket.bind(('localhost', 8080))
+server_socket.listen(5)
+server_socket.setblocking(False)
+
+# 使用poll来监控事件
+poller = select.poll()
+poller.register(server_socket, select.POLLIN)
+
+fd_to_socket = {server_socket.fileno(): server_socket}
+
+while True:
+    events = poller.poll()
+    for fd, flag in events:
+        sock = fd_to_socket[fd]
+        
+        if flag & select.POLLIN:
+            if sock is server_socket:
+                # 接受新连接
+                conn, addr = sock.accept()
+                print('Connected by', addr)
+                conn.setblocking(False)
+                fd_to_socket[conn.fileno()] = conn
+                poller.register(conn, select.POLLIN)
+            else:
+                # 读取数据
+                data = sock.recv(1024)
+                if data:
+                    poller.modify(sock, select.POLLOUT)
+                else:
+                    poller.unregister(sock)
+                    sock.close()
+                    del fd_to_socket[fd]
+
+        elif flag & select.POLLOUT:
+            # 发送数据
+            sock.send(b"Response")
+            poller.modify(sock, select.POLLIN)
+        
+        elif flag & select.POLLERR:
+            # 处理错误
+            poller.unregister(sock)
+            sock.close()
+            del fd_to_socket[fd] """
+
+
+####epoll模块####
+#epoll是Linux特有的IO多路复用实现。相比select和poll，epoll更适合处理大量连接，适用于高并发的服务器
+""" 
+import select
+import socket
+
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server_socket.bind(('localhost', 8080))
+server_socket.listen(5)
+server_socket.setblocking(False)
+
+epoll = select.epoll()
+epoll.register(server_socket.fileno(), select.EPOLLIN)
+
+fd_to_socket = {server_socket.fileno(): server_socket}
+
+while True:
+    events = epoll.poll()
+    for fd, event in events:
+        sock = fd_to_socket[fd]
+        
+        if event & select.EPOLLIN:
+            if sock is server_socket:
+                # 接受新连接
+                conn, addr = sock.accept()
+                print('Connected by', addr)
+                conn.setblocking(False)
+                fd_to_socket[conn.fileno()] = conn
+                epoll.register(conn.fileno(), select.EPOLLIN)
+            else:
+                # 读取数据
+                data = sock.recv(1024)
+                if data:
+                    epoll.modify(fd, select.EPOLLOUT)
+                else:
+                    epoll.unregister(fd)
+                    sock.close()
+                    del fd_to_socket[fd]
+        
+        elif event & select.EPOLLOUT:
+            # 发送数据
+            sock.send(b"Response")
+            epoll.modify(fd, select.EPOLLIN)
+        
+        elif event & select.EPOLLHUP:
+            # 处理挂起
+            epoll.unregister(fd)
+            sock.close()
+            del fd_to_socket[fd] """
