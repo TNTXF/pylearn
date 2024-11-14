@@ -376,7 +376,12 @@ app.on_cleanup.append(on_cleanup)
 if __name__ == '__main__':
     web.run_app(app, host="127.0.0.1", port=8080) """
 
-
+#################################################################
+""" Python Web开发中，常用的框架主要有以下几种：
+    Flask：轻量级Web框架，设计简洁、易上手，适合小型应用或API。
+    Django：全栈框架，功能强大，内置了ORM、认证、模板引擎等组件，适合大型Web应用开发。
+    FastAPI：基于asyncio的高性能框架，支持自动生成API文档，适合异步I/O密集型应用。
+    Tornado、Sanic：异步Web框架，适合高并发处理，性能优异。 """
 
 
 
